@@ -1,0 +1,1513 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>CITRO — Sistema de Trámites</title>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@300;400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet"/>
+<style>
+/* ═══════════════════════════════════════════════════
+   TOKENS
+═══════════════════════════════════════════════════ */
+:root{
+  --navy:    #0D1F3C;
+  --navy2:   #16325A;
+  --teal:    #0A7A6E;
+  --teal2:   #0DB8A8;
+  --amber:   #E8920A;
+  --amber2:  #FFC542;
+  --red:     #C0392B;
+  --green:   #1A7A4A;
+  --blue:    #1B5FA8;
+  --purple:  #5B2F8A;
+  --orange:  #B85C0A;
+  --white:   #FFFFFF;
+  --surf:    #F2F5FA;
+  --surf2:   #E8EDF5;
+  --border:  #C8D4E8;
+  --text:    #162040;
+  --muted:   #5A6880;
+  --light:   #8A9AB8;
+  --r:       8px;
+  --r2:      12px;
+  --sh:      0 2px 12px rgba(13,31,60,.09);
+  --sh2:     0 4px 24px rgba(13,31,60,.14);
+  --sh3:     0 8px 40px rgba(13,31,60,.18);
+  --sidebar: 220px;
+  --header:  56px;
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{font-size:14px;height:100%}
+body{
+  font-family:'IBM Plex Sans',sans-serif;
+  background:var(--surf);color:var(--text);
+  height:100%;display:flex;overflow:hidden;
+}
+
+/* ═══════════════════════════════════════════════════
+   SIDEBAR
+═══════════════════════════════════════════════════ */
+.sidebar{
+  width:var(--sidebar);min-width:var(--sidebar);
+  background:var(--navy);
+  display:flex;flex-direction:column;
+  height:100vh;overflow:hidden;
+  box-shadow:2px 0 20px rgba(0,0,0,.25);
+  z-index:10;position:relative;
+}
+.sb-brand{
+  padding:18px 16px 14px;
+  border-bottom:1px solid rgba(255,255,255,.08);
+}
+.sb-emblem{
+  width:36px;height:36px;background:var(--amber);
+  border-radius:8px;display:flex;align-items:center;justify-content:center;
+  font-size:1.1rem;font-weight:700;color:var(--navy);
+  margin-bottom:8px;box-shadow:0 0 0 3px rgba(232,146,10,.22);
+}
+.sb-title{font-size:.85rem;font-weight:700;color:#fff;line-height:1.2}
+.sb-sub{font-size:.68rem;color:rgba(255,255,255,.42);margin-top:2px;letter-spacing:.04em}
+.sb-section{
+  padding:16px 0 4px;
+  font-size:.62rem;font-weight:700;color:rgba(255,255,255,.28);
+  letter-spacing:.1em;text-transform:uppercase;
+  padding-left:16px;
+}
+.nav-item{
+  display:flex;align-items:center;gap:10px;
+  padding:9px 16px;cursor:pointer;
+  border-radius:0;transition:all .15s;
+  position:relative;border-left:3px solid transparent;
+  color:rgba(255,255,255,.55);font-size:.83rem;font-weight:500;
+  user-select:none;
+}
+.nav-item:hover{
+  background:rgba(255,255,255,.06);
+  color:rgba(255,255,255,.9);
+}
+.nav-item.active{
+  background:rgba(10,122,110,.2);
+  border-left-color:var(--teal2);
+  color:#fff;
+}
+.nav-item .nav-icon{font-size:1rem;width:20px;text-align:center;flex-shrink:0}
+.nav-item .nav-badge{
+  margin-left:auto;background:var(--amber);color:var(--navy);
+  font-size:.62rem;font-weight:700;border-radius:10px;
+  padding:1px 6px;min-width:18px;text-align:center;
+}
+.sb-divider{height:1px;background:rgba(255,255,255,.07);margin:8px 0}
+.sb-footer{
+  margin-top:auto;padding:12px 16px;
+  border-top:1px solid rgba(255,255,255,.07);
+  font-size:.72rem;color:rgba(255,255,255,.28);
+  line-height:1.5;
+}
+
+/* ═══════════════════════════════════════════════════
+   MAIN AREA
+═══════════════════════════════════════════════════ */
+.main{flex:1;display:flex;flex-direction:column;height:100vh;overflow:hidden}
+
+/* Top bar */
+.topbar{
+  height:var(--header);min-height:var(--header);
+  background:var(--white);border-bottom:1px solid var(--border);
+  display:flex;align-items:center;gap:12px;padding:0 20px;
+  box-shadow:0 1px 4px rgba(13,31,60,.06);
+  z-index:5;
+}
+.topbar-title{font-size:1rem;font-weight:600;color:var(--text);flex:1}
+.topbar-sub{font-size:.75rem;color:var(--muted);margin-left:8px;font-weight:400}
+.topbar-right{display:flex;align-items:center;gap:8px;margin-left:auto}
+.topbar-date{font-size:.75rem;color:var(--muted);font-family:'IBM Plex Mono',monospace}
+.topbar-dot{
+  width:8px;height:8px;border-radius:50%;background:var(--green);
+  box-shadow:0 0 0 2px rgba(26,122,74,.2);
+}
+
+/* Content scroll area */
+.content{flex:1;overflow-y:auto;padding:20px;scroll-behavior:smooth}
+.screen{display:none;animation:fadeIn .2s ease}
+.screen.active{display:block}
+@keyframes fadeIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+
+/* ═══════════════════════════════════════════════════
+   COMPONENTS
+═══════════════════════════════════════════════════ */
+/* Stats row */
+.stats-row{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:20px}
+.stat-card{
+  background:var(--white);border-radius:var(--r2);
+  padding:16px;box-shadow:var(--sh);
+  border-top:3px solid var(--border);
+  display:flex;flex-direction:column;gap:4px;
+  transition:box-shadow .15s,transform .15s;
+}
+.stat-card:hover{box-shadow:var(--sh2);transform:translateY(-1px)}
+.stat-card.c-teal{border-top-color:var(--teal)}
+.stat-card.c-amber{border-top-color:var(--amber)}
+.stat-card.c-green{border-top-color:var(--green)}
+.stat-card.c-blue{border-top-color:var(--blue)}
+.stat-num{font-size:2rem;font-weight:700;color:var(--text);line-height:1;font-family:'IBM Plex Mono',monospace}
+.stat-lbl{font-size:.72rem;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;font-weight:600}
+.stat-trend{font-size:.72rem;color:var(--muted);margin-top:2px}
+
+/* Cards */
+.card{background:var(--white);border-radius:var(--r2);box-shadow:var(--sh);margin-bottom:16px;overflow:hidden}
+.card-header{
+  padding:14px 18px;border-bottom:1px solid var(--surf2);
+  display:flex;align-items:center;gap:8px;
+}
+.card-header h3{font-size:.88rem;font-weight:600;color:var(--text)}
+.card-header .spacer{flex:1}
+.card-body{padding:18px}
+.card-body.p0{padding:0}
+
+/* Grid utilities */
+.g2{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.g3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px}
+.g4{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
+.gcol2{grid-column:1/-1}
+
+/* Form structure */
+.form-wrap{display:grid;grid-template-columns:1fr 280px;gap:16px;align-items:start}
+.form-main{display:flex;flex-direction:column;gap:14px}
+.form-sidebar-col{display:flex;flex-direction:column;gap:12px;position:sticky;top:0}
+
+.section-block{
+  background:var(--white);border-radius:var(--r2);
+  box-shadow:var(--sh);overflow:hidden;
+}
+.section-head{
+  padding:12px 16px;
+  display:flex;align-items:center;gap:8px;
+  border-bottom:1px solid var(--surf2);
+  background:var(--surf);
+}
+.section-tag{
+  font-size:.62rem;font-weight:700;letter-spacing:.08em;
+  text-transform:uppercase;color:var(--white);
+  background:var(--teal);padding:2px 7px;border-radius:4px;
+}
+.section-head h4{font-size:.82rem;font-weight:600;color:var(--text)}
+.section-body{padding:16px}
+.fields{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:12px}
+.field{display:flex;flex-direction:column;gap:4px}
+.field.full{grid-column:1/-1}
+.field.col2{grid-column:span 2}
+label{font-size:.75rem;font-weight:600;color:var(--text)}
+label .req{color:var(--red);margin-left:2px}
+label .hint-tag{
+  font-size:.62rem;font-weight:600;color:var(--teal);
+  background:rgba(10,122,110,.1);padding:1px 5px;border-radius:3px;margin-left:4px;
+  font-family:'IBM Plex Mono',monospace;
+}
+input[type=text],input[type=email],input[type=number],input[type=date],select,textarea{
+  border:1.5px solid var(--border);border-radius:var(--r);
+  padding:7px 10px;font-size:.82rem;font-family:'IBM Plex Sans',sans-serif;
+  color:var(--text);background:var(--white);
+  transition:border-color .15s,box-shadow .15s;
+  width:100%;
+}
+input:focus,select:focus,textarea:focus{
+  outline:none;border-color:var(--teal);
+  box-shadow:0 0 0 3px rgba(10,122,110,.1);
+}
+input.err,select.err,textarea.err{border-color:var(--red)!important;box-shadow:0 0 0 3px rgba(192,57,43,.1)!important}
+textarea{resize:vertical;min-height:72px}
+.field-hint{font-size:.68rem;color:var(--muted)}
+select option[value=""]{color:var(--muted)}
+
+/* Buttons */
+.btn{
+  display:inline-flex;align-items:center;gap:6px;
+  padding:8px 16px;border-radius:var(--r);border:none;
+  font-size:.8rem;font-weight:600;cursor:pointer;
+  font-family:'IBM Plex Sans',sans-serif;
+  transition:all .15s;white-space:nowrap;
+}
+.btn-primary{background:var(--teal);color:#fff;box-shadow:0 2px 8px rgba(10,122,110,.28)}
+.btn-primary:hover{background:#0A9080;box-shadow:0 3px 12px rgba(10,122,110,.4);transform:translateY(-1px)}
+.btn-secondary{background:var(--surf);color:var(--text);border:1.5px solid var(--border)}
+.btn-secondary:hover{background:var(--surf2);border-color:var(--teal);color:var(--teal)}
+.btn-danger{background:var(--red);color:#fff}
+.btn-danger:hover{background:#A02020}
+.btn-ghost{background:none;color:var(--muted);border:1.5px solid var(--border)}
+.btn-ghost:hover{color:var(--text);border-color:var(--text)}
+.btn-sm{padding:5px 10px;font-size:.72rem}
+.btn-icon{padding:7px;border-radius:6px}
+
+/* Tags / Badges */
+.badge{
+  display:inline-flex;align-items:center;gap:3px;
+  font-size:.68rem;font-weight:700;padding:2px 7px;border-radius:4px;
+  letter-spacing:.03em;text-transform:uppercase;
+}
+.badge-pending{background:#FFF3CD;color:#7A4F00}
+.badge-done{background:#D4EDDA;color:#155724}
+.badge-new{background:#D6EAF8;color:#1A4F7A}
+.badge-review{background:#EDE0FF;color:#5B2F8A}
+.badge-canceled{background:#FDECEA;color:#922B21}
+
+/* Folio display */
+.folio-display{
+  background:var(--navy);border-radius:var(--r);
+  padding:10px 14px;display:flex;align-items:center;gap:10px;
+  margin-bottom:4px;
+}
+.folio-display .folio-code{
+  font-family:'IBM Plex Mono',monospace;font-size:1rem;
+  font-weight:500;color:var(--amber2);letter-spacing:.06em;
+}
+.folio-display .folio-label{font-size:.68rem;color:rgba(255,255,255,.4);margin-left:auto}
+
+/* Alert / notification */
+.alert{
+  display:flex;align-items:flex-start;gap:10px;
+  padding:10px 14px;border-radius:var(--r);
+  font-size:.8rem;border-left:3px solid;
+  margin-top:8px;
+}
+.alert-success{background:#D4EDDA;border-color:var(--green);color:#155724}
+.alert-error{background:#FDECEA;border-color:var(--red);color:#922B21}
+.alert-info{background:#D6EAF8;border-color:var(--blue);color:#1A4F7A}
+.alert{display:none}
+.alert.show{display:flex}
+
+/* Table */
+.table-wrap{overflow-x:auto}
+table{width:100%;border-collapse:collapse}
+thead th{
+  background:var(--navy);color:#fff;
+  font-size:.72rem;text-transform:uppercase;letter-spacing:.06em;font-weight:600;
+  padding:10px 12px;text-align:left;white-space:nowrap;
+}
+thead th:first-child{border-radius:0}
+tbody tr{border-bottom:1px solid var(--surf2);transition:background .1s}
+tbody tr:hover{background:var(--surf)}
+tbody td{padding:9px 12px;font-size:.8rem;vertical-align:middle}
+.empty-state{
+  text-align:center;padding:40px;
+  color:var(--muted);font-size:.85rem;
+}
+.empty-state .es-icon{font-size:2.5rem;margin-bottom:8px;opacity:.4}
+
+/* Info sidebar card */
+.info-card{
+  background:var(--white);border-radius:var(--r2);box-shadow:var(--sh);
+  overflow:hidden;
+}
+.info-card-head{
+  padding:10px 14px;
+  display:flex;align-items:center;gap:8px;
+  border-bottom:1px solid var(--surf2);
+}
+.info-card-head .ico{font-size:1.1rem}
+.info-card-head h5{font-size:.78rem;font-weight:700;color:var(--text)}
+.info-card-body{padding:12px 14px;font-size:.75rem;color:var(--muted);line-height:1.6}
+.info-card-body strong{color:var(--text);display:block;margin-bottom:2px}
+.info-card-body code{
+  font-family:'IBM Plex Mono',monospace;font-size:.7rem;
+  background:var(--surf2);padding:1px 5px;border-radius:3px;color:var(--teal);
+}
+
+/* Timeline */
+.timeline{display:flex;flex-direction:column}
+.tl-item{
+  display:flex;gap:12px;padding:8px 0;
+  border-left:2px solid var(--surf2);margin-left:8px;padding-left:14px;
+  position:relative;
+}
+.tl-item::before{
+  content:'';position:absolute;left:-5px;top:14px;
+  width:8px;height:8px;border-radius:50%;
+  background:var(--teal);border:2px solid var(--white);
+}
+.tl-item.new::before{background:var(--amber)}
+.tl-item.done::before{background:var(--green)}
+.tl-time{font-size:.68rem;color:var(--muted);font-family:'IBM Plex Mono',monospace;width:76px;flex-shrink:0;padding-top:2px}
+.tl-text{font-size:.78rem;color:var(--text);line-height:1.5}
+.tl-text strong{color:var(--navy);font-weight:600}
+
+/* Form selector tabs */
+.form-tabs{display:flex;gap:4px;margin-bottom:16px;flex-wrap:wrap}
+.form-tab{
+  display:flex;align-items:center;gap:7px;
+  padding:8px 14px;border-radius:var(--r);border:1.5px solid var(--border);
+  background:var(--white);cursor:pointer;transition:all .15s;
+  font-size:.78rem;font-weight:600;color:var(--muted);
+  box-shadow:var(--sh);
+}
+.form-tab:hover{border-color:var(--teal);color:var(--teal)}
+.form-tab.active{border-color:var(--teal);background:rgba(10,122,110,.06);color:var(--teal);box-shadow:0 0 0 2px rgba(10,122,110,.12)}
+.form-tab .tab-code{
+  font-family:'IBM Plex Mono',monospace;font-size:.62rem;
+  background:var(--surf2);padding:1px 5px;border-radius:3px;color:var(--muted);
+}
+.form-tab.active .tab-code{background:rgba(10,122,110,.15);color:var(--teal)}
+
+/* Form header strip */
+.form-header-strip{
+  padding:14px 18px;
+  background:linear-gradient(135deg,var(--navy) 0%,var(--navy2) 100%);
+  border-radius:var(--r2) var(--r2) 0 0;
+  margin-bottom:0;display:flex;align-items:center;gap:12px;
+}
+.fhs-accent{width:4px;align-self:stretch;border-radius:2px;flex-shrink:0}
+.fhs-info{flex:1}
+.fhs-info h3{font-size:.95rem;font-weight:700;color:#fff}
+.fhs-info p{font-size:.72rem;color:rgba(255,255,255,.5);margin-top:2px}
+.fhs-folio{
+  font-family:'IBM Plex Mono',monospace;font-size:.8rem;
+  color:var(--amber2);background:rgba(255,255,255,.07);
+  padding:5px 10px;border-radius:5px;border:1px solid rgba(255,255,255,.1);
+  white-space:nowrap;
+}
+
+/* Page header */
+.page-header{margin-bottom:20px}
+.page-header h2{font-size:1.2rem;font-weight:700;color:var(--text);display:flex;align-items:center;gap:8px}
+.page-header p{font-size:.8rem;color:var(--muted);margin-top:4px}
+
+/* Search/filter bar */
+.filter-bar{
+  display:flex;gap:8px;align-items:center;margin-bottom:16px;flex-wrap:wrap;
+}
+.filter-bar input{flex:1;min-width:200px}
+.filter-bar select{width:160px}
+
+/* Quick actions grid */
+.quick-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:20px}
+.quick-card{
+  background:var(--white);border-radius:var(--r2);box-shadow:var(--sh);
+  padding:16px;cursor:pointer;transition:all .18s;
+  border:2px solid transparent;text-align:center;
+  display:flex;flex-direction:column;align-items:center;gap:8px;
+}
+.quick-card:hover{box-shadow:var(--sh2);transform:translateY(-2px);border-color:var(--border)}
+.quick-card.qc-pg:hover{border-color:var(--purple);background:rgba(91,47,138,.03)}
+.quick-card.qc-sc:hover{border-color:var(--green);background:rgba(26,122,74,.03)}
+.quick-card.qc-pr:hover{border-color:var(--orange);background:rgba(184,92,10,.03)}
+.quick-card.qc-oe:hover{border-color:var(--blue);background:rgba(27,95,168,.03)}
+.quick-icon{
+  width:48px;height:48px;border-radius:12px;
+  display:flex;align-items:center;justify-content:center;font-size:1.5rem;
+}
+.quick-name{font-size:.82rem;font-weight:700;color:var(--text)}
+.quick-code{font-size:.68rem;font-family:'IBM Plex Mono',monospace;color:var(--muted)}
+
+/* Dashboard two-column */
+.dash-grid{display:grid;grid-template-columns:1fr 340px;gap:16px}
+
+/* Scrollbar */
+::-webkit-scrollbar{width:5px;height:5px}
+::-webkit-scrollbar-track{background:transparent}
+::-webkit-scrollbar-thumb{background:var(--surf2);border-radius:3px}
+
+/* Status bar */
+.status-bar{
+  background:var(--white);border-top:1px solid var(--border);
+  padding:6px 20px;display:flex;align-items:center;gap:16px;
+  font-size:.7rem;color:var(--muted);
+}
+.status-bar .sb-ok{color:var(--green);display:flex;align-items:center;gap:4px}
+
+/* Responsive */
+@media(max-width:900px){
+  .sidebar{display:none}
+  .stats-row,.quick-grid,.g4{grid-template-columns:1fr 1fr}
+  .dash-grid,.form-wrap{grid-template-columns:1fr}
+}
+</style>
+</head>
+<body>
+
+<!-- ═══════════════════════════════════════════════
+     SIDEBAR
+═══════════════════════════════════════════════════ -->
+<nav class="sidebar">
+  <div class="sb-brand">
+    <div class="sb-emblem">C</div>
+    <div class="sb-title">CITRO — UV</div>
+    <div class="sb-sub">Centro de Inv. Tropicales</div>
+  </div>
+
+  <div class="sb-section">Principal</div>
+  <div class="nav-item active" data-screen="s-inicio" onclick="nav(this)">
+    <span class="nav-icon">🏠</span> Inicio
+  </div>
+  <div class="nav-item" data-screen="s-tramites" onclick="nav(this)">
+    <span class="nav-icon">📋</span> Mis Trámites
+    <span class="nav-badge" id="nb-total">0</span>
+  </div>
+
+  <div class="sb-divider"></div>
+  <div class="sb-section">Nueva Solicitud</div>
+
+  <div class="nav-item" data-screen="s-form" data-type="pg" onclick="navForm(this)">
+    <span class="nav-icon">📩</span> Petición General
+    <span class="nav-badge" id="nb-pg" style="background:rgba(91,47,138,.6)">0</span>
+  </div>
+  <div class="nav-item" data-screen="s-form" data-type="sc" onclick="navForm(this)">
+    <span class="nav-icon">🌿</span> Salida de Campo
+    <span class="nav-badge" id="nb-sc" style="background:rgba(26,122,74,.6)">0</span>
+  </div>
+  <div class="nav-item" data-screen="s-form" data-type="pr" onclick="navForm(this)">
+    <span class="nav-icon">📦</span> Petición Recursos
+    <span class="nav-badge" id="nb-pr" style="background:rgba(184,92,10,.6)">0</span>
+  </div>
+  <div class="nav-item" data-screen="s-form" data-type="oe" onclick="navForm(this)">
+    <span class="nav-icon">🎓</span> Org. de Evento
+    <span class="nav-badge" id="nb-oe" style="background:rgba(27,95,168,.6)">0</span>
+  </div>
+
+  <div class="sb-divider"></div>
+  <div class="sb-section">Sistema</div>
+  <div class="nav-item" data-screen="s-config" onclick="nav(this)">
+    <span class="nav-icon">⚙️</span> Configuración
+  </div>
+  <div class="nav-item" onclick="clearAll()">
+    <span class="nav-icon">🗑️</span> Limpiar datos
+  </div>
+
+  <div class="sb-footer">
+    CITRO-Formularios v2.0<br>
+    <span style="font-family:'IBM Plex Mono',monospace">CITRO / UV · 2025</span>
+  </div>
+</nav>
+
+<!-- ═══════════════════════════════════════════════
+     MAIN
+═══════════════════════════════════════════════════ -->
+<div class="main">
+  <!-- Top bar -->
+  <div class="topbar">
+    <div class="topbar-title" id="topbar-title">Inicio <span class="topbar-sub">Panel de control</span></div>
+    <div class="topbar-right">
+      <div class="topbar-date" id="topbar-date"></div>
+      <div class="topbar-dot" title="Sistema en línea"></div>
+    </div>
+  </div>
+
+  <!-- Content -->
+  <div class="content">
+
+    <!-- ════ PANTALLA: INICIO ════ -->
+    <div class="screen active" id="s-inicio">
+      <div class="page-header">
+        <h2>🏠 Panel de Control</h2>
+        <p>Bienvenido al sistema de gestión de trámites CITRO · Universidad Veracruzana</p>
+      </div>
+
+      <!-- Stats -->
+      <div class="stats-row">
+        <div class="stat-card c-teal">
+          <div class="stat-num" id="st-total">0</div>
+          <div class="stat-lbl">Trámites totales</div>
+          <div class="stat-trend">Todos los tipos</div>
+        </div>
+        <div class="stat-card c-amber">
+          <div class="stat-num" id="st-pend">0</div>
+          <div class="stat-lbl">En proceso</div>
+          <div class="stat-trend">Pendientes de atención</div>
+        </div>
+        <div class="stat-card c-green">
+          <div class="stat-num" id="st-done">0</div>
+          <div class="stat-lbl">Completados</div>
+          <div class="stat-trend">PDF + ZIP generados</div>
+        </div>
+        <div class="stat-card c-blue">
+          <div class="stat-num" id="st-today">0</div>
+          <div class="stat-lbl">Nuevos hoy</div>
+          <div class="stat-trend" id="st-date-lbl">—</div>
+        </div>
+      </div>
+
+      <!-- Quick access -->
+      <div class="quick-grid">
+        <div class="quick-card qc-pg" onclick="navFormDirect('pg')">
+          <div class="quick-icon" style="background:rgba(91,47,138,.1)">📩</div>
+          <div class="quick-name">Petición General</div>
+          <div class="quick-code">PG-YYYY-NNN</div>
+        </div>
+        <div class="quick-card qc-sc" onclick="navFormDirect('sc')">
+          <div class="quick-icon" style="background:rgba(26,122,74,.1)">🌿</div>
+          <div class="quick-name">Salida de Campo</div>
+          <div class="quick-code">SC-YYYY-NNN</div>
+        </div>
+        <div class="quick-card qc-pr" onclick="navFormDirect('pr')">
+          <div class="quick-icon" style="background:rgba(184,92,10,.1)">📦</div>
+          <div class="quick-name">Petición de Recursos</div>
+          <div class="quick-code">PR-YYYY-NNN</div>
+        </div>
+        <div class="quick-card qc-oe" onclick="navFormDirect('oe')">
+          <div class="quick-icon" style="background:rgba(27,95,168,.1)">🎓</div>
+          <div class="quick-name">Organización de Evento</div>
+          <div class="quick-code">OE-YYYY-NNN</div>
+        </div>
+      </div>
+
+      <!-- Dashboard grid -->
+      <div class="dash-grid">
+        <!-- Actividad reciente -->
+        <div class="card">
+          <div class="card-header">
+            <span>📅</span><h3>Actividad Reciente</h3>
+            <span class="spacer"></span>
+            <button class="btn btn-ghost btn-sm" onclick="nav(document.querySelector('[data-screen=s-tramites]'))">Ver todos →</button>
+          </div>
+          <div class="card-body p0">
+            <div id="dash-timeline" style="padding:12px 16px">
+              <div class="empty-state" id="dash-empty">
+                <div class="es-icon">📭</div>
+                <p>No hay trámites registrados aún.<br>Use los accesos directos arriba para crear su primera solicitud.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Estado por tipo -->
+        <div style="display:flex;flex-direction:column;gap:12px">
+          <div class="card">
+            <div class="card-header"><span>📊</span><h3>Trámites por tipo</h3></div>
+            <div class="card-body" style="padding:12px 16px">
+              <div id="type-bars">
+                <div style="text-align:center;padding:16px;color:var(--muted);font-size:.78rem">Sin datos aún</div>
+              </div>
+            </div>
+          </div>
+          <div class="card">
+            <div class="card-header"><span>💡</span><h3>Guía rápida</h3></div>
+            <div class="card-body" style="font-size:.75rem;color:var(--muted);line-height:1.7">
+              <p><strong style="color:var(--text)">1. Seleccione el trámite</strong><br>Use el menú lateral o los accesos directos.</p>
+              <p style="margin-top:8px"><strong style="color:var(--text)">2. Complete los campos</strong><br>Los marcados con <span style="color:var(--red)">*</span> son obligatorios.</p>
+              <p style="margin-top:8px"><strong style="color:var(--text)">3. Envíe la solicitud</strong><br>Se genera folio automático y queda registrada.</p>
+              <p style="margin-top:8px"><strong style="color:var(--text)">4. Descargue o imprima</strong><br>Desde "Mis Trámites" acceda al historial.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div><!-- /s-inicio -->
+
+    <!-- ════ PANTALLA: MIS TRÁMITES ════ -->
+    <div class="screen" id="s-tramites">
+      <div class="page-header">
+        <h2>📋 Mis Trámites</h2>
+        <p>Historial completo de solicitudes registradas en este dispositivo</p>
+      </div>
+      <div class="card">
+        <div class="card-body">
+          <div class="filter-bar">
+            <input type="text" id="q-search" placeholder="Buscar por folio, nombre o tipo…" oninput="renderTable()"/>
+            <select id="q-tipo" onchange="renderTable()">
+              <option value="">Todos los tipos</option>
+              <option value="pg">Petición General</option>
+              <option value="sc">Salida de Campo</option>
+              <option value="pr">Petición de Recursos</option>
+              <option value="oe">Organización de Evento</option>
+            </select>
+            <select id="q-estado" onchange="renderTable()">
+              <option value="">Todos los estados</option>
+              <option value="Pendiente">Pendiente</option>
+              <option value="En revisión">En revisión</option>
+              <option value="Completado">Completado</option>
+            </select>
+            <button class="btn btn-primary btn-sm" onclick="exportCSV()">⬇ Exportar CSV</button>
+          </div>
+          <div class="table-wrap">
+            <table id="main-table">
+              <thead>
+                <tr>
+                  <th>Folio</th><th>Tipo</th><th>Solicitante</th>
+                  <th>Matrícula</th><th>Fecha</th><th>Estado</th><th>Acciones</th>
+                </tr>
+              </thead>
+              <tbody id="table-body"></tbody>
+            </table>
+          </div>
+          <div class="empty-state" id="table-empty" style="display:none">
+            <div class="es-icon">📭</div>
+            <p>No se encontraron trámites con los filtros aplicados.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ════ PANTALLA: FORMULARIO ════ -->
+    <div class="screen" id="s-form">
+      <div class="form-tabs" id="form-tabs">
+        <div class="form-tab active" data-t="pg" onclick="switchForm('pg',this)">
+          <span>📩</span> Petición General <span class="tab-code">PG</span>
+        </div>
+        <div class="form-tab" data-t="sc" onclick="switchForm('sc',this)">
+          <span>🌿</span> Salida de Campo <span class="tab-code">SC</span>
+        </div>
+        <div class="form-tab" data-t="pr" onclick="switchForm('pr',this)">
+          <span>📦</span> Petición Recursos <span class="tab-code">PR</span>
+        </div>
+        <div class="form-tab" data-t="oe" onclick="switchForm('oe',this)">
+          <span>🎓</span> Org. Evento <span class="tab-code">OE</span>
+        </div>
+      </div>
+
+      <!-- FORM: PG -->
+      <div id="form-pg" class="form-def">
+        <div class="form-wrap">
+          <div class="form-main">
+            <div class="form-header-strip">
+              <div class="fhs-accent" style="background:var(--purple)"></div>
+              <div class="fhs-info">
+                <h3>Nueva Petición General — CITRO / UV</h3>
+                <p>Asunto: Petición General · Complete todos los campos marcados con *</p>
+              </div>
+              <div class="fhs-folio" id="pg-folio-hdr">PG-YYYY-NNN</div>
+            </div>
+            <div class="section-block">
+              <div class="section-head">
+                <span class="section-tag" style="background:var(--teal)">01</span>
+                <h4>Identificación del Solicitante</h4>
+              </div>
+              <div class="section-body">
+                <div class="fields">
+                  <div class="field"><label>Apellido(s)<span class="req">*</span></label><input type="text" id="pg-apellidos" placeholder="García Morales"/></div>
+                  <div class="field"><label>Nombre(s)<span class="req">*</span></label><input type="text" id="pg-nombres" placeholder="Alejandro"/></div>
+                  <div class="field"><label>Matrícula UV<span class="req">*</span></label><input type="text" id="pg-matricula" placeholder="S23XXXXXX" maxlength="10"/></div>
+                  <div class="field"><label>Correo institucional<span class="req">*</span></label><input type="email" id="pg-correo" placeholder="s23xxx@estudiantes.uv.mx"/></div>
+                  <div class="field col2"><label>Programa académico<span class="req">*</span></label>
+                    <select id="pg-programa"><option value="">— Seleccione —</option><option>Maestría en Ciencias Biológicas</option><option>Maestría en Ecología y Manejo de Recursos</option><option>Doctorado en Ciencias Biológicas y Agropecuarias</option><option>Doctorado en Ecología Tropical</option><option>Otro</option></select>
+                  </div>
+                  <div class="field col2"><label>Director(a) de tesis</label><input type="text" id="pg-director" placeholder="Dr./Dra. Nombre Completo"/></div>
+                </div>
+              </div>
+            </div>
+            <div class="section-block">
+              <div class="section-head">
+                <span class="section-tag" style="background:var(--purple)">02</span>
+                <h4>Datos de la Petición General</h4>
+              </div>
+              <div class="section-body">
+                <div class="fields">
+                  <div class="field col2"><label>Tipo de petición<span class="req">*</span></label>
+                    <select id="pg-tipo"><option value="">— Seleccione tipo —</option><optgroup label="Académico"><option>Prórroga de inscripción</option><option>Cambio de director(a) de tesis</option><option>Incorporación de co-director(a)</option><option>Cambio de tema de tesis</option><option>Justificación de inasistencia</option></optgroup><optgroup label="Administrativo"><option>Constancia de estudios</option><option>Carta de no adeudo</option><option>Acceso a laboratorios / instalaciones</option><option>Apoyo económico extraordinario</option></optgroup><optgroup label="Otro"><option>Petición diversa (describir)</option></optgroup></select>
+                  </div>
+                  <div class="field"><label>Fecha de solicitud<span class="req">*</span></label><input type="date" id="pg-fecha"/></div>
+                  <div class="field"><label>Urgencia</label>
+                    <select id="pg-urgencia"><option value="normal">Normal (10 días hábiles)</option><option value="prioritario">Prioritario (5 días hábiles)</option><option value="urgente">URGENTE</option></select>
+                  </div>
+                  <div class="field full"><label>Descripción de la petición<span class="req">*</span></label><textarea id="pg-descripcion" rows="4" placeholder="Exponga detalladamente la petición, incluyendo antecedentes, justificación y lo que solicita formalmente al CITRO…"></textarea></div>
+                  <div class="field col2"><label>Documentos adjuntos</label><input type="text" id="pg-adjuntos" placeholder="Archivos separados por coma"/><span class="field-hint">Depositados en adjuntos/</span></div>
+                  <div class="field col2"><label>Observaciones adicionales</label><textarea id="pg-obs" rows="2" placeholder="Información complementaria…"></textarea></div>
+                </div>
+              </div>
+            </div>
+            <div id="pg-alert" class="alert alert-success"><span>✓</span><span id="pg-alert-msg"></span></div>
+            <div style="display:flex;gap:8px;flex-wrap:wrap">
+              <button class="btn btn-primary" onclick="submitForm('pg')">⬇ Registrar + Generar PDF</button>
+              <button class="btn btn-secondary" onclick="resetForm('pg')">↺ Limpiar</button>
+              <button class="btn btn-ghost" onclick="printForm('pg')">🖨 Imprimir carta</button>
+            </div>
+          </div>
+          <div class="form-sidebar-col">
+            <div class="info-card"><div class="info-card-head"><span class="ico">📩</span><h5>Petición General</h5></div>
+              <div class="info-card-body"><strong>Folio actual</strong><div class="folio-display"><span class="folio-code" id="pg-folio-sb">PG-YYYY-NNN</span><span class="folio-label">Asignado al enviar</span></div>
+              <strong style="margin-top:8px">Campos de la plantilla</strong>Apellidos · Nombres · Matrícula · Correo · Programa · Director · Tipo · Descripción · Fecha · Urgencia · Adjuntos<br><br>
+              <strong>Salida</strong><code>PeticionGeneral_[Mat]_[Apell]_[YYYYMMDD].pdf</code><br><code>PeticionGeneral_[Mat]_[Apell]_[YYYYMMDD].zip</code></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- FORM: SC -->
+      <div id="form-sc" class="form-def" style="display:none">
+        <div class="form-wrap">
+          <div class="form-main">
+            <div class="form-header-strip">
+              <div class="fhs-accent" style="background:var(--green)"></div>
+              <div class="fhs-info">
+                <h3>Carta de Salida de Campo — CITRO / UV</h3>
+                <p>Asunto: Solicitud de Aval para Salida de Campo</p>
+              </div>
+              <div class="fhs-folio" id="sc-folio-hdr">SC-YYYY-NNN</div>
+            </div>
+            <div class="section-block">
+              <div class="section-head"><span class="section-tag" style="background:var(--teal)">01</span><h4>Identificación del Solicitante</h4></div>
+              <div class="section-body">
+                <div class="fields">
+                  <div class="field"><label>Apellido(s)<span class="req">*</span></label><input type="text" id="sc-apellidos" placeholder="García Morales"/></div>
+                  <div class="field"><label>Nombre(s)<span class="req">*</span></label><input type="text" id="sc-nombres" placeholder="Alejandro"/></div>
+                  <div class="field"><label>Grado académico<span class="req">*</span></label>
+                    <select id="sc-grado"><option value="">— Grado —</option><option>Lic.</option><option>Ing.</option><option>M.C.</option><option>M.S.</option><option>Dr.</option><option>Dra.</option></select>
+                  </div>
+                  <div class="field"><label>Matrícula UV<span class="req">*</span></label><input type="text" id="sc-matricula" placeholder="S23XXXXXX"/></div>
+                  <div class="field col2"><label>Correo institucional<span class="req">*</span></label><input type="email" id="sc-correo" placeholder="s23xxx@estudiantes.uv.mx"/></div>
+                  <div class="field col2"><label>Director(a) de tesis</label><input type="text" id="sc-director" placeholder="Dr./Dra. Nombre Completo"/></div>
+                </div>
+              </div>
+            </div>
+            <div class="section-block">
+              <div class="section-head"><span class="section-tag" style="background:var(--green)">02</span><h4>Datos de la Salida de Campo</h4></div>
+              <div class="section-body">
+                <div class="fields">
+                  <div class="field full"><label>Lugar(es) de la salida <span class="hint-tag">[Lugares]</span><span class="req">*</span></label>
+                    <textarea id="sc-lugares" rows="3" placeholder="Municipios, ejidos, reservas, coordenadas del área de trabajo de campo…"></textarea></div>
+                  <div class="field full"><label>Actividades a realizar <span class="hint-tag">[Actividades]</span><span class="req">*</span></label>
+                    <textarea id="sc-actividades" rows="3" placeholder="Muestreo, colecta, entrevistas, mediciones, instalación de equipo de monitoreo…"></textarea></div>
+                  <div class="field"><label>Fecha de salida <span class="hint-tag">[Fecha]</span><span class="req">*</span></label><input type="date" id="sc-fecha-salida"/></div>
+                  <div class="field"><label>Fecha de regreso<span class="req">*</span></label><input type="date" id="sc-fecha-regreso"/></div>
+                  <div class="field"><label>N.° de participantes</label><input type="number" id="sc-participantes" placeholder="4" min="1"/></div>
+                  <div class="field"><label>Vehículo / Transporte</label><input type="text" id="sc-transporte" placeholder="Vehículo institucional…"/></div>
+                </div>
+              </div>
+            </div>
+            <div id="sc-alert" class="alert alert-success"><span>✓</span><span id="sc-alert-msg"></span></div>
+            <div style="display:flex;gap:8px;flex-wrap:wrap">
+              <button class="btn btn-primary" onclick="submitForm('sc')">⬇ Registrar + Generar carta</button>
+              <button class="btn btn-secondary" onclick="resetForm('sc')">↺ Limpiar</button>
+              <button class="btn btn-ghost" onclick="printForm('sc')">🖨 Imprimir carta</button>
+            </div>
+          </div>
+          <div class="form-sidebar-col">
+            <div class="info-card"><div class="info-card-head"><span class="ico">🌿</span><h5>Salida de Campo</h5></div>
+              <div class="info-card-body"><strong>Folio actual</strong><div class="folio-display"><span class="folio-code" id="sc-folio-sb">SC-YYYY-NNN</span><span class="folio-label">Asignado al enviar</span></div>
+              <strong style="margin-top:8px">Campos marcados en plantilla</strong>
+              <code>[Nombre y grado]</code> → Grado + Apellidos + Nombres<br>
+              <code>[Lugares]</code> → Lugar(es) de la salida<br>
+              <code>[Actividades]</code> → Actividades a realizar<br>
+              <code>[Fecha]</code> → Fecha de salida<br><br>
+              <strong>Salida</strong><code>SalidaCampo_[Mat]_[Apell]_[YYYYMMDD].pdf</code></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- FORM: PR -->
+      <div id="form-pr" class="form-def" style="display:none">
+        <div class="form-wrap">
+          <div class="form-main">
+            <div class="form-header-strip">
+              <div class="fhs-accent" style="background:var(--orange)"></div>
+              <div class="fhs-info">
+                <h3>Petición de Recursos Académicos — CITRO / UV</h3>
+                <p>Asunto: Solicitud de Recursos Académicos</p>
+              </div>
+              <div class="fhs-folio" id="pr-folio-hdr">PR-YYYY-NNN</div>
+            </div>
+            <div class="section-block">
+              <div class="section-head"><span class="section-tag" style="background:var(--teal)">01</span><h4>Identificación del Solicitante</h4></div>
+              <div class="section-body">
+                <div class="fields">
+                  <div class="field"><label>Apellido(s) <span class="hint-tag">[Nombre]</span><span class="req">*</span></label><input type="text" id="pr-apellidos" placeholder="García Morales"/></div>
+                  <div class="field"><label>Nombre(s)<span class="req">*</span></label><input type="text" id="pr-nombres" placeholder="Alejandro"/></div>
+                  <div class="field"><label>Matrícula UV <span class="hint-tag">[Matrícula]</span><span class="req">*</span></label><input type="text" id="pr-matricula" placeholder="S23XXXXXX"/></div>
+                  <div class="field"><label>Correo institucional</label><input type="email" id="pr-correo" placeholder="s23xxx@estudiantes.uv.mx"/></div>
+                  <div class="field col2"><label>Programa académico</label>
+                    <select id="pr-programa"><option value="">— Seleccione —</option><option>Maestría en Ciencias Biológicas</option><option>Maestría en Ecología y Manejo de Recursos</option><option>Doctorado en Ciencias Biológicas y Agropecuarias</option><option>Doctorado en Ecología Tropical</option><option>Otro</option></select>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="section-block">
+              <div class="section-head"><span class="section-tag" style="background:var(--orange)">02</span><h4>Datos de la Petición de Recursos</h4></div>
+              <div class="section-body">
+                <div class="fields">
+                  <div class="field full"><label>Actividad académica <span class="hint-tag">[Actividad]</span><span class="req">*</span></label>
+                    <input type="text" id="pr-actividad" placeholder="Nombre completo de la actividad para la que se solicitan los recursos…"/></div>
+                  <div class="field full"><label>Justificación <span class="hint-tag">[Justificación]</span><span class="req">*</span></label>
+                    <textarea id="pr-justificacion" rows="4" placeholder="Argumente la necesidad del recurso solicitado, su pertinencia con el proyecto de investigación y su impacto académico…"></textarea></div>
+                  <div class="field col2"><label>Tipo de recurso solicitado<span class="req">*</span></label>
+                    <select id="pr-tipo"><option value="">— Seleccione —</option><option>Materiales de laboratorio</option><option>Equipamiento científico</option><option>Reactivos y consumibles</option><option>Software / Licencias</option><option>Viáticos y transporte</option><option>Apoyo bibliográfico</option><option>Apoyo técnico / servicios</option><option>Otro (especificar en justificación)</option></select>
+                  </div>
+                  <div class="field"><label>Monto estimado (MXN)</label><input type="number" id="pr-monto" placeholder="0.00" min="0" step="0.01"/></div>
+                  <div class="field"><label>Proyecto / Cuenta asociada</label><input type="text" id="pr-proyecto" placeholder="Clave del proyecto"/></div>
+                  <div class="field"><label>Fecha requerida<span class="req">*</span></label><input type="date" id="pr-fecha"/></div>
+                </div>
+              </div>
+            </div>
+            <div id="pr-alert" class="alert alert-success"><span>✓</span><span id="pr-alert-msg"></span></div>
+            <div style="display:flex;gap:8px;flex-wrap:wrap">
+              <button class="btn btn-primary" onclick="submitForm('pr')">⬇ Registrar + Generar solicitud</button>
+              <button class="btn btn-secondary" onclick="resetForm('pr')">↺ Limpiar</button>
+              <button class="btn btn-ghost" onclick="printForm('pr')">🖨 Imprimir</button>
+            </div>
+          </div>
+          <div class="form-sidebar-col">
+            <div class="info-card"><div class="info-card-head"><span class="ico">📦</span><h5>Petición de Recursos</h5></div>
+              <div class="info-card-body"><strong>Folio actual</strong><div class="folio-display"><span class="folio-code" id="pr-folio-sb">PR-YYYY-NNN</span><span class="folio-label">Asignado al enviar</span></div>
+              <strong style="margin-top:8px">Campos marcados en plantilla</strong>
+              <code>[Actividad]</code> → Actividad académica<br>
+              <code>[Justificación]</code> → Justificación<br>
+              <code>[Nombre]</code> → Apellidos + Nombres<br>
+              <code>[Matrícula]</code> → Matrícula UV<br><br>
+              <strong>Salida</strong><code>PeticionRecursos_[Mat]_[Apell]_[YYYYMMDD].pdf</code></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- FORM: OE -->
+      <div id="form-oe" class="form-def" style="display:none">
+        <div class="form-wrap">
+          <div class="form-main">
+            <div class="form-header-strip">
+              <div class="fhs-accent" style="background:var(--blue)"></div>
+              <div class="fhs-info">
+                <h3>Organización de Evento Académico — CITRO / UV</h3>
+                <p>Asunto: Solicitud de Aval para Organización de Evento Académico</p>
+              </div>
+              <div class="fhs-folio" id="oe-folio-hdr">OE-YYYY-NNN</div>
+            </div>
+            <div class="section-block">
+              <div class="section-head"><span class="section-tag" style="background:var(--teal)">01</span><h4>Identificación del Solicitante</h4></div>
+              <div class="section-body">
+                <div class="fields">
+                  <div class="field"><label>Apellido(s)<span class="req">*</span></label><input type="text" id="oe-apellidos" placeholder="García Morales"/></div>
+                  <div class="field"><label>Nombre(s)<span class="req">*</span></label><input type="text" id="oe-nombres" placeholder="Alejandro"/></div>
+                  <div class="field"><label>Matrícula UV<span class="req">*</span></label><input type="text" id="oe-matricula" placeholder="S23XXXXXX"/></div>
+                  <div class="field"><label>Correo institucional</label><input type="email" id="oe-correo" placeholder="s23xxx@estudiantes.uv.mx"/></div>
+                  <div class="field col2"><label>Programa académico</label>
+                    <select id="oe-programa"><option value="">— Seleccione —</option><option>Maestría en Ciencias Biológicas</option><option>Maestría en Ecología y Manejo de Recursos</option><option>Doctorado en Ciencias Biológicas y Agropecuarias</option><option>Doctorado en Ecología Tropical</option><option>Otro</option></select>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="section-block">
+              <div class="section-head"><span class="section-tag" style="background:var(--blue)">02</span><h4>Datos del Evento Académico</h4></div>
+              <div class="section-body">
+                <div class="fields">
+                  <div class="field full"><label>Nombre del evento <span class="hint-tag">[Evento]</span><span class="req">*</span></label>
+                    <input type="text" id="oe-nombre" placeholder="Título completo del congreso, simposio, taller, seminario…"/></div>
+                  <div class="field"><label>Fecha del evento <span class="hint-tag">[Datos]</span><span class="req">*</span></label><input type="date" id="oe-fecha"/></div>
+                  <div class="field col2"><label>Sede / Lugar <span class="hint-tag">[Datos]</span><span class="req">*</span></label><input type="text" id="oe-sede" placeholder="Instalación, municipio, estado…"/></div>
+                  <div class="field"><label>Presupuesto (MXN) <span class="hint-tag">[Monto]</span><span class="req">*</span></label><input type="number" id="oe-presupuesto" placeholder="0.00" min="0" step="0.01"/></div>
+                  <div class="field"><label>N.° asistentes esperados <span class="hint-tag">[Número]</span><span class="req">*</span></label><input type="number" id="oe-asistentes" placeholder="80" min="1"/></div>
+                  <div class="field full"><label>Proyecto asociado <span class="hint-tag">[Proyecto]</span><span class="req">*</span></label>
+                    <input type="text" id="oe-proyecto" placeholder="Clave o nombre del proyecto de investigación vinculado al evento"/></div>
+                  <div class="field full"><label>Impacto en LGAC / PLADEA <span class="hint-tag">[Descripción]</span><span class="req">*</span></label>
+                    <textarea id="oe-lgac" rows="4" placeholder="Describa la relación del evento con las Líneas de Generación y Aplicación del Conocimiento (LGAC) y el Plan de Desarrollo de la Entidad Académica (PLADEA)…"></textarea></div>
+                </div>
+              </div>
+            </div>
+            <div id="oe-alert" class="alert alert-success"><span>✓</span><span id="oe-alert-msg"></span></div>
+            <div style="display:flex;gap:8px;flex-wrap:wrap">
+              <button class="btn btn-primary" onclick="submitForm('oe')">⬇ Registrar + Generar aval</button>
+              <button class="btn btn-secondary" onclick="resetForm('oe')">↺ Limpiar</button>
+              <button class="btn btn-ghost" onclick="printForm('oe')">🖨 Imprimir carta</button>
+            </div>
+          </div>
+          <div class="form-sidebar-col">
+            <div class="info-card"><div class="info-card-head"><span class="ico">🎓</span><h5>Organización de Evento</h5></div>
+              <div class="info-card-body"><strong>Folio actual</strong><div class="folio-display"><span class="folio-code" id="oe-folio-sb">OE-YYYY-NNN</span><span class="folio-label">Asignado al enviar</span></div>
+              <strong style="margin-top:8px">Campos marcados en plantilla</strong>
+              <code>[Evento]</code> → Nombre del evento<br>
+              <code>[Datos]</code> → Fecha y sede<br>
+              <code>[Monto]</code> → Presupuesto<br>
+              <code>[Número]</code> → N.° asistentes<br>
+              <code>[Proyecto]</code> → Proyecto asociado<br>
+              <code>[Descripción]</code> → Impacto LGAC/PLADEA<br><br>
+              <strong>Salida</strong><code>OrganizacionEvento_[Mat]_[Apell]_[YYYYMMDD].pdf</code></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div><!-- /s-form -->
+
+    <!-- ════ PANTALLA: CONFIGURACIÓN ════ -->
+    <div class="screen" id="s-config">
+      <div class="page-header"><h2>⚙️ Configuración</h2><p>Ajustes del sistema CITRO-Formularios</p></div>
+      <div class="card">
+        <div class="card-header"><span>🏫</span><h3>Datos institucionales</h3></div>
+        <div class="card-body">
+          <div class="g2">
+            <div class="field"><label>Nombre de la institución</label><input type="text" id="cfg-inst" value="Centro de Investigaciones Tropicales (CITRO)"/></div>
+            <div class="field"><label>Universidad</label><input type="text" id="cfg-uni" value="Universidad Veracruzana"/></div>
+            <div class="field"><label>Director(a) CITRO</label><input type="text" id="cfg-director" placeholder="Dr./Dra. Nombre del Director"/></div>
+            <div class="field"><label>Correo institucional</label><input type="email" id="cfg-mail" placeholder="citro@uv.mx"/></div>
+          </div>
+          <div style="margin-top:12px">
+            <button class="btn btn-primary" onclick="saveConfig()">💾 Guardar configuración</button>
+          </div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-header"><span>📊</span><h3>Datos del sistema</h3></div>
+        <div class="card-body">
+          <div id="config-stats" style="font-size:.82rem;color:var(--muted);line-height:2"></div>
+          <div style="margin-top:12px;display:flex;gap:8px">
+            <button class="btn btn-secondary btn-sm" onclick="exportJSON()">⬇ Exportar datos JSON</button>
+            <button class="btn btn-danger btn-sm" onclick="clearAll()">🗑 Borrar todos los datos</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- /content -->
+
+  <!-- Status bar -->
+  <div class="status-bar">
+    <span class="sb-ok">● Sistema activo</span>
+    <span id="sb-version">CITRO-Formularios v2.0</span>
+    <span style="margin-left:auto" id="sb-count">0 trámites registrados</span>
+  </div>
+</div><!-- /main -->
+
+<!-- ═══════════════════════════════════════════════
+     PRINT TEMPLATE (hidden)
+═══════════════════════════════════════════════════ -->
+<div id="print-area" style="display:none"></div>
+
+<script>
+// ═══════════════════════════════════════════════════════════
+// STATE
+// ═══════════════════════════════════════════════════════════
+const STORAGE_KEY = 'citro_tramites_v2';
+const FOLIO_KEY   = 'citro_folios_v2';
+const CFG_KEY     = 'citro_config';
+
+function loadData()  { try{ return JSON.parse(localStorage.getItem(STORAGE_KEY)||'[]'); }catch(e){ return []; } }
+function saveData(d) { localStorage.setItem(STORAGE_KEY, JSON.stringify(d)); }
+function loadFolios(){ try{ return JSON.parse(localStorage.getItem(FOLIO_KEY)||'{"PG":0,"SC":0,"PR":0,"OE":0}'); }catch(e){ return {PG:0,SC:0,PR:0,OE:0}; } }
+function saveFolios(f){ localStorage.setItem(FOLIO_KEY, JSON.stringify(f)); }
+function loadCfg()  { try{ return JSON.parse(localStorage.getItem(CFG_KEY)||'{}'); }catch(e){ return {}; } }
+
+let data   = loadData();
+let folios = loadFolios();
+
+const TYPE_LABELS = { pg:'Petición General', sc:'Salida de Campo', pr:'Petición de Recursos', oe:'Organización de Evento' };
+const TYPE_PREFIXES = { pg:'PG', sc:'SC', pr:'PR', oe:'OE' };
+const TYPE_COLORS   = { pg:'var(--purple)', sc:'var(--green)', pr:'var(--orange)', oe:'var(--blue)' };
+const TYPE_ICONS    = { pg:'📩', sc:'🌿', pr:'📦', oe:'🎓' };
+
+// ═══════════════════════════════════════════════════════════
+// NAVIGATION
+// ═══════════════════════════════════════════════════════════
+const SCREEN_TITLES = {
+  's-inicio':   ['🏠 Inicio', 'Panel de control'],
+  's-tramites': ['📋 Mis Trámites', 'Historial completo'],
+  's-form':     ['📝 Nueva Solicitud', 'Formularios CITRO'],
+  's-config':   ['⚙️ Configuración', 'Ajustes del sistema'],
+};
+
+function nav(el) {
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  el.classList.add('active');
+  const sid = el.dataset.screen;
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById(sid).classList.add('active');
+  const t = SCREEN_TITLES[sid] || ['CITRO',''];
+  document.getElementById('topbar-title').innerHTML =
+    t[0] + (t[1] ? ` <span class="topbar-sub">${t[1]}</span>` : '');
+  if(sid === 's-tramites') renderTable();
+  if(sid === 's-inicio') renderDashboard();
+  if(sid === 's-config') renderConfigStats();
+}
+
+function navForm(el) {
+  // activate nav item
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  el.classList.add('active');
+  // show form screen
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById('s-form').classList.add('active');
+  const type = el.dataset.type;
+  switchForm(type, document.querySelector(`.form-tab[data-t="${type}"]`));
+  document.getElementById('topbar-title').innerHTML =
+    `📝 ${TYPE_ICONS[type]} ${TYPE_LABELS[type]} <span class="topbar-sub">Nueva solicitud</span>`;
+}
+
+function navFormDirect(type) {
+  navForm({
+    dataset: { screen:'s-form', type },
+    classList: { add(){}, remove(){} },
+  });
+  // activate correct nav item
+  document.querySelectorAll('.nav-item').forEach(n => {
+    n.classList.remove('active');
+    if(n.dataset.type === type) n.classList.add('active');
+  });
+}
+
+function switchForm(type, tabEl) {
+  document.querySelectorAll('.form-def').forEach(f => f.style.display='none');
+  document.getElementById('form-'+type).style.display='block';
+  document.querySelectorAll('.form-tab').forEach(t => t.classList.remove('active'));
+  if(tabEl) tabEl.classList.add('active');
+  else {
+    const t = document.querySelector(`.form-tab[data-t="${type}"]`);
+    if(t) t.classList.add('active');
+  }
+  updateFolioPreview(type);
+}
+
+// ═══════════════════════════════════════════════════════════
+// FOLIO
+// ═══════════════════════════════════════════════════════════
+function previewFolio(type) {
+  const prefix = TYPE_PREFIXES[type];
+  const year   = new Date().getFullYear();
+  const next   = (folios[prefix] || 0) + 1;
+  return `${prefix}-${year}-${String(next).padStart(3,'0')}`;
+}
+function assignFolio(type) {
+  const prefix = TYPE_PREFIXES[type];
+  folios[prefix] = (folios[prefix] || 0) + 1;
+  saveFolios(folios);
+  const year = new Date().getFullYear();
+  return `${prefix}-${year}-${String(folios[prefix]).padStart(3,'0')}`;
+}
+function updateFolioPreview(type) {
+  const f = previewFolio(type);
+  const hdr = document.getElementById(type+'-folio-hdr');
+  const sb  = document.getElementById(type+'-folio-sb');
+  if(hdr) hdr.textContent = f;
+  if(sb)  sb.textContent  = f;
+}
+
+// ═══════════════════════════════════════════════════════════
+// FORM SUBMIT / VALIDATION
+// ═══════════════════════════════════════════════════════════
+const FORM_REQUIRED = {
+  pg: ['pg-apellidos','pg-nombres','pg-matricula','pg-correo','pg-programa','pg-tipo','pg-descripcion','pg-fecha'],
+  sc: ['sc-apellidos','sc-nombres','sc-grado','sc-matricula','sc-correo','sc-lugares','sc-actividades','sc-fecha-salida','sc-fecha-regreso'],
+  pr: ['pr-apellidos','pr-nombres','pr-matricula','pr-actividad','pr-justificacion','pr-tipo','pr-fecha'],
+  oe: ['oe-apellidos','oe-nombres','oe-matricula','oe-nombre','oe-fecha','oe-sede','oe-presupuesto','oe-asistentes','oe-proyecto','oe-lgac'],
+};
+
+function validate(type) {
+  let ok = true;
+  FORM_REQUIRED[type].forEach(id => {
+    const el = document.getElementById(id);
+    if(!el) return;
+    if(!el.value.trim()) { el.classList.add('err'); ok=false; }
+    else el.classList.remove('err');
+  });
+  return ok;
+}
+
+function buildRecord(type, folio) {
+  const g = id => (document.getElementById(id)||{value:''}).value.trim();
+  const base = {
+    folio, type,
+    label: TYPE_LABELS[type],
+    fecha: new Date().toISOString(),
+    estado: 'Pendiente',
+    apellidos: g(type+'-apellidos'),
+    nombres:   g(type+'-nombres'),
+    matricula: g(type+'-matricula'),
+    correo:    g(type+'-correo'),
+  };
+  if(type==='pg') return { ...base,
+    programa: g('pg-programa'), director: g('pg-director'),
+    tipo: g('pg-tipo'), urgencia: g('pg-urgencia'),
+    descripcion: g('pg-descripcion'), adjuntos: g('pg-adjuntos'), obs: g('pg-obs'),
+    fecha_sol: g('pg-fecha'),
+  };
+  if(type==='sc') return { ...base,
+    grado: g('sc-grado'), director: g('sc-director'),
+    lugares: g('sc-lugares'), actividades: g('sc-actividades'),
+    fecha_salida: g('sc-fecha-salida'), fecha_regreso: g('sc-fecha-regreso'),
+    participantes: g('sc-participantes'), transporte: g('sc-transporte'),
+  };
+  if(type==='pr') return { ...base,
+    programa: g('pr-programa'), actividad: g('pr-actividad'),
+    justificacion: g('pr-justificacion'), tipo_recurso: g('pr-tipo'),
+    monto: g('pr-monto'), proyecto: g('pr-proyecto'), fecha_req: g('pr-fecha'),
+  };
+  if(type==='oe') return { ...base,
+    nombre_evento: g('oe-nombre'), fecha_evento: g('oe-fecha'),
+    sede: g('oe-sede'), presupuesto: g('oe-presupuesto'),
+    asistentes: g('oe-asistentes'), proyecto: g('oe-proyecto'), lgac: g('oe-lgac'),
+  };
+}
+
+function submitForm(type) {
+  if(!validate(type)) {
+    showAlert(type, 'error', 'Complete todos los campos obligatorios (marcados con *)');
+    return;
+  }
+  const folio = assignFolio(type);
+  const rec   = buildRecord(type, folio);
+  data.push(rec);
+  saveData(data);
+  updateAllCounters();
+  updateFolioPreview(type);
+
+  const apell = rec.apellidos.split(' ')[0];
+  const d     = new Date().toISOString().split('T')[0].replace(/-/g,'');
+  const fname = `${TYPE_LABELS[type].replace(/ /g,'')}_${rec.matricula}_${apell}_${d}`;
+
+  showAlert(type, 'success',
+    `✓ Folio ${folio} registrado · ${fname}.pdf listo para imprimir`);
+
+  // scroll to top
+  document.querySelector('.content').scrollTo({top:0,behavior:'smooth'});
+}
+
+function showAlert(type, kind, msg) {
+  const el  = document.getElementById(type+'-alert');
+  const msg_el = document.getElementById(type+'-alert-msg');
+  el.className = `alert alert-${kind} show`;
+  msg_el.textContent = msg;
+  setTimeout(() => el.classList.remove('show'), 7000);
+}
+
+function resetForm(type) {
+  FORM_REQUIRED[type].forEach(id => {
+    const el = document.getElementById(id);
+    if(el){ el.value=''; el.classList.remove('err'); }
+  });
+  // clear other fields too
+  document.querySelectorAll(`#form-${type} input, #form-${type} select, #form-${type} textarea`).forEach(el => {
+    el.value = '';
+    el.classList.remove('err');
+  });
+  // restore today
+  const today = new Date().toISOString().split('T')[0];
+  ['pg-fecha','sc-fecha-salida','sc-fecha-regreso','pr-fecha','oe-fecha'].forEach(id => {
+    const el = document.getElementById(id);
+    if(el) el.value = today;
+  });
+  const alert_el = document.getElementById(type+'-alert');
+  if(alert_el) alert_el.classList.remove('show');
+}
+
+// ═══════════════════════════════════════════════════════════
+// PRINT
+// ═══════════════════════════════════════════════════════════
+function printForm(type) {
+  const g = id => (document.getElementById(id)||{value:''}).value.trim();
+  const today = new Date().toLocaleDateString('es-MX',{day:'numeric',month:'long',year:'numeric'});
+  const folio = document.getElementById(type+'-folio-hdr').textContent;
+  let html = '';
+
+  const header = `
+    <div style="text-align:center;border-bottom:2px solid #0D1F3C;padding-bottom:12px;margin-bottom:16px">
+      <div style="font-size:.75rem;text-transform:uppercase;letter-spacing:.1em;color:#5A6880">Centro de Investigaciones Tropicales</div>
+      <div style="font-size:1.4rem;font-weight:700;color:#0D1F3C">UNIVERSIDAD VERACRUZANA</div>
+      <div style="font-size:.75rem;color:#5A6880;margin-top:2px">Xalapa, Veracruz · ${today}</div>
+    </div>`;
+
+  const firma = `
+    <div style="margin-top:48px;display:grid;grid-template-columns:1fr 1fr;gap:32px">
+      <div style="text-align:center">
+        <div style="border-top:1px solid #333;padding-top:6px;font-size:.75rem">Firma del solicitante<br><span style="color:#5A6880">${g(type+'-apellidos')}, ${g(type+'-nombres')}</span></div>
+      </div>
+      <div style="text-align:center">
+        <div style="border-top:1px solid #333;padding-top:6px;font-size:.75rem">Vo.Bo. Dirección CITRO</div>
+      </div>
+    </div>
+    <div style="margin-top:24px;text-align:center;font-size:.65rem;color:#9AA5B4;border-top:1px solid #eee;padding-top:8px">
+      Documento generado por CITRO-Formularios v2.0 · Folio ${folio}
+    </div>`;
+
+  if(type==='pg') {
+    html = `${header}
+      <div style="text-align:right;margin-bottom:16px">
+        <span style="font-family:monospace;background:#f2f5fa;padding:4px 10px;border-radius:4px;font-size:.8rem;color:#0A7A6E">Folio: ${folio}</span>
+      </div>
+      <p style="margin-bottom:4px"><strong>Asunto:</strong> Solicitud de Aval — Petición General</p>
+      <p style="margin-bottom:16px;color:#5A6880">A quien corresponda:</p>
+      <p style="margin-bottom:12px">Yo, <strong>${g('pg-apellidos')}, ${g('pg-nombres')}</strong>, con matrícula <strong>${g('pg-matricula')}</strong>, estudiante del programa de <strong>${g('pg-programa')}</strong>, solicito respetuosamente a la Dirección del CITRO/UV el siguiente trámite:</p>
+      <p style="margin-bottom:8px"><strong>Tipo de petición:</strong> ${g('pg-tipo')}</p>
+      <p style="margin-bottom:8px"><strong>Urgencia:</strong> ${g('pg-urgencia')}</p>
+      <p style="margin-bottom:12px"><strong>Descripción:</strong><br>${g('pg-descripcion')}</p>
+      ${g('pg-obs') ? `<p style="margin-bottom:12px"><strong>Observaciones:</strong><br>${g('pg-obs')}</p>` : ''}
+      <p>Agradezco su atención y quedo a sus órdenes para cualquier aclaración.</p>
+      <p style="margin-top:8px">Atentamente,<br><strong>${g('pg-apellidos')}, ${g('pg-nombres')}</strong></p>${firma}`;
+  } else if(type==='sc') {
+    html = `${header}
+      <div style="text-align:right;margin-bottom:16px">
+        <span style="font-family:monospace;background:#f2f5fa;padding:4px 10px;border-radius:4px;font-size:.8rem;color:#1A7A4A">Folio: ${folio}</span>
+      </div>
+      <p style="margin-bottom:4px"><strong>Asunto:</strong> Solicitud de Aval para Salida de Campo</p>
+      <p style="margin-bottom:16px;color:#5A6880">A quien corresponda:</p>
+      <p style="margin-bottom:12px">Yo, <strong>${g('sc-grado')} ${g('sc-apellidos')}, ${g('sc-nombres')}</strong>, con matrícula <strong>${g('sc-matricula')}</strong>, solicito aval para la salida de campo en:</p>
+      <ul style="margin-left:20px;margin-bottom:12px;line-height:2">
+        <li><strong>Lugar(es):</strong> ${g('sc-lugares')}</li>
+        <li><strong>Actividades:</strong> ${g('sc-actividades')}</li>
+        <li><strong>Fecha:</strong> ${g('sc-fecha-salida')} al ${g('sc-fecha-regreso')}</li>
+        ${g('sc-participantes') ? `<li><strong>Participantes:</strong> ${g('sc-participantes')}</li>` : ''}
+        ${g('sc-transporte') ? `<li><strong>Transporte:</strong> ${g('sc-transporte')}</li>` : ''}
+      </ul>
+      <p>Atentamente,<br><strong>${g('sc-grado')} ${g('sc-apellidos')}, ${g('sc-nombres')}</strong></p>${firma}`;
+  } else if(type==='pr') {
+    html = `${header}
+      <div style="text-align:right;margin-bottom:16px">
+        <span style="font-family:monospace;background:#f2f5fa;padding:4px 10px;border-radius:4px;font-size:.8rem;color:#B85C0A">Folio: ${folio}</span>
+      </div>
+      <p style="margin-bottom:4px"><strong>Asunto:</strong> Solicitud de Recursos Académicos</p>
+      <p style="margin-bottom:16px;color:#5A6880">A quien corresponda:</p>
+      <p style="margin-bottom:12px">Solicito apoyo para la actividad: <strong>${g('pr-actividad')}</strong></p>
+      <p style="margin-bottom:4px"><strong>Justificación:</strong></p>
+      <p style="margin-bottom:12px">${g('pr-justificacion')}</p>
+      ${g('pr-tipo') ? `<p style="margin-bottom:8px"><strong>Tipo de recurso:</strong> ${g('pr-tipo')}</p>` : ''}
+      ${g('pr-monto') ? `<p style="margin-bottom:8px"><strong>Monto estimado:</strong> $${parseFloat(g('pr-monto')).toLocaleString('es-MX',{minimumFractionDigits:2})} MXN</p>` : ''}
+      ${g('pr-proyecto') ? `<p style="margin-bottom:8px"><strong>Proyecto:</strong> ${g('pr-proyecto')}</p>` : ''}
+      <p>Atentamente,<br><strong>${g('pr-apellidos')}, ${g('pr-nombres')}</strong><br><span style="color:#5A6880">Matrícula: ${g('pr-matricula')}</span></p>${firma}`;
+  } else if(type==='oe') {
+    html = `${header}
+      <div style="text-align:right;margin-bottom:16px">
+        <span style="font-family:monospace;background:#f2f5fa;padding:4px 10px;border-radius:4px;font-size:.8rem;color:#1B5FA8">Folio: ${folio}</span>
+      </div>
+      <p style="margin-bottom:4px"><strong>Asunto:</strong> Solicitud de Aval para Organización de Evento Académico</p>
+      <p style="margin-bottom:16px;color:#5A6880">A quien corresponda:</p>
+      <p style="margin-bottom:12px">Solicito apoyo para el evento:</p>
+      <ul style="margin-left:20px;margin-bottom:12px;line-height:2">
+        <li><strong>Nombre:</strong> ${g('oe-nombre')}</li>
+        <li><strong>Fecha y sede:</strong> ${g('oe-fecha')} · ${g('oe-sede')}</li>
+        <li><strong>Presupuesto:</strong> $${parseFloat(g('oe-presupuesto')||0).toLocaleString('es-MX',{minimumFractionDigits:2})} MXN</li>
+        <li><strong>Asistentes:</strong> ${g('oe-asistentes')}</li>
+        <li><strong>Proyecto asociado:</strong> ${g('oe-proyecto')}</li>
+      </ul>
+      <p style="margin-bottom:4px"><strong>Impacto LGAC/PLADEA:</strong></p>
+      <p style="margin-bottom:12px">${g('oe-lgac')}</p>
+      <p>Atentamente,<br><strong>${g('oe-apellidos')}, ${g('oe-nombres')}</strong></p>${firma}`;
+  }
+
+  const w = window.open('','_blank','width=794,height=1100');
+  w.document.write(`<!doctype html><html><head><meta charset="utf-8"><title>CITRO — ${folio}</title>
+    <style>
+      body{font-family:'Times New Roman',serif;font-size:12pt;line-height:1.6;margin:2cm;color:#111}
+      @media print{body{margin:1.5cm}}
+    </style></head><body>${html}</body></html>`);
+  w.document.close();
+  setTimeout(()=>w.print(),400);
+}
+
+// ═══════════════════════════════════════════════════════════
+// TABLE
+// ═══════════════════════════════════════════════════════════
+function renderTable() {
+  const q     = (document.getElementById('q-search').value||'').toLowerCase();
+  const tFilt = document.getElementById('q-tipo').value;
+  const sFilt = document.getElementById('q-estado').value;
+
+  let rows = [...data].reverse().filter(r => {
+    const matchQ = !q || JSON.stringify(r).toLowerCase().includes(q);
+    const matchT = !tFilt || r.type === tFilt;
+    const matchS = !sFilt || r.estado === sFilt;
+    return matchQ && matchT && matchS;
+  });
+
+  const tbody = document.getElementById('table-body');
+  const empty = document.getElementById('table-empty');
+  tbody.innerHTML = '';
+
+  if(!rows.length) {
+    empty.style.display='block';
+    document.getElementById('main-table').style.display='none';
+    return;
+  }
+  empty.style.display='none';
+  document.getElementById('main-table').style.display='table';
+
+  rows.forEach((r,i) => {
+    const d  = new Date(r.fecha);
+    const ds = d.toLocaleDateString('es-MX',{day:'2-digit',month:'2-digit',year:'numeric'});
+    const estadoMap = {
+      'Pendiente':'badge-pending','En revisión':'badge-review','Completado':'badge-done','Cancelado':'badge-canceled'
+    };
+    tbody.innerHTML += `
+      <tr>
+        <td><span style="font-family:'IBM Plex Mono',monospace;font-size:.78rem;color:var(--teal);font-weight:600">${r.folio}</span></td>
+        <td><span style="font-size:.72rem">${TYPE_ICONS[r.type]} ${r.label}</span></td>
+        <td>${r.apellidos}, ${r.nombres}</td>
+        <td style="font-family:'IBM Plex Mono',monospace;font-size:.75rem">${r.matricula}</td>
+        <td style="font-size:.75rem;color:var(--muted)">${ds}</td>
+        <td><span class="badge ${estadoMap[r.estado]||'badge-new'}">${r.estado}</span></td>
+        <td style="display:flex;gap:4px">
+          <button class="btn btn-ghost btn-sm" onclick="changeStatus(${data.length-1-i})" title="Cambiar estado">✏️</button>
+          <button class="btn btn-ghost btn-sm" onclick="deleteRecord(${data.length-1-i})" title="Eliminar">🗑</button>
+        </td>
+      </tr>`;
+  });
+}
+
+function changeStatus(idx) {
+  const estados = ['Pendiente','En revisión','Completado','Cancelado'];
+  const curr = data[idx].estado;
+  const next = estados[(estados.indexOf(curr)+1)%estados.length];
+  data[idx].estado = next;
+  saveData(data);
+  renderTable();
+  updateAllCounters();
+}
+
+function deleteRecord(idx) {
+  if(!confirm(`¿Eliminar el trámite ${data[idx].folio}?`)) return;
+  data.splice(idx, 1);
+  saveData(data);
+  renderTable();
+  updateAllCounters();
+}
+
+// ═══════════════════════════════════════════════════════════
+// DASHBOARD
+// ═══════════════════════════════════════════════════════════
+function renderDashboard() {
+  const total = data.length;
+  const pend  = data.filter(r=>r.estado==='Pendiente').length;
+  const done  = data.filter(r=>r.estado==='Completado').length;
+  const today_str = new Date().toISOString().split('T')[0];
+  const todayCount= data.filter(r=>r.fecha.startsWith(today_str)).length;
+
+  document.getElementById('st-total').textContent = total;
+  document.getElementById('st-pend').textContent  = pend;
+  document.getElementById('st-done').textContent  = done;
+  document.getElementById('st-today').textContent = todayCount;
+  document.getElementById('st-date-lbl').textContent = new Date().toLocaleDateString('es-MX',{weekday:'long',day:'numeric',month:'short'});
+
+  // Timeline
+  const tl  = document.getElementById('dash-timeline');
+  const emp = document.getElementById('dash-empty');
+  if(!data.length){ emp.style.display='block'; tl.innerHTML=''; tl.appendChild(emp); return; }
+  emp.style.display='none';
+
+  const recent = [...data].reverse().slice(0,6);
+  let tlHtml = '<div class="timeline">';
+  recent.forEach(r=>{
+    const d = new Date(r.fecha);
+    const time = d.toLocaleTimeString('es-MX',{hour:'2-digit',minute:'2-digit'});
+    const cls  = r.estado==='Completado'?'done':r.estado==='Pendiente'?'new':'';
+    tlHtml += `<div class="tl-item ${cls}">
+      <div class="tl-time">${time}</div>
+      <div class="tl-text"><strong>${TYPE_ICONS[r.type]} ${r.label}</strong> — ${r.apellidos}, ${r.nombres} · <span style="font-family:'IBM Plex Mono',monospace;color:var(--teal);font-size:.72rem">${r.folio}</span></div>
+    </div>`;
+  });
+  tlHtml += '</div>';
+  tl.innerHTML = tlHtml;
+
+  // Type bars
+  const types = ['pg','sc','pr','oe'];
+  const typeBars = document.getElementById('type-bars');
+  if(!data.length){ typeBars.innerHTML='<div style="text-align:center;padding:16px;color:var(--muted);font-size:.78rem">Sin datos aún</div>'; return; }
+  let bHtml = '';
+  types.forEach(t=>{
+    const cnt = data.filter(r=>r.type===t).length;
+    const pct = total ? Math.round(cnt/total*100) : 0;
+    bHtml += `
+      <div style="margin-bottom:10px">
+        <div style="display:flex;justify-content:space-between;font-size:.72rem;margin-bottom:3px">
+          <span>${TYPE_ICONS[t]} ${TYPE_LABELS[t]}</span>
+          <span style="font-family:'IBM Plex Mono',monospace;color:var(--muted)">${cnt}</span>
+        </div>
+        <div style="height:6px;background:var(--surf2);border-radius:3px;overflow:hidden">
+          <div style="height:100%;width:${pct}%;background:${TYPE_COLORS[t]};border-radius:3px;transition:width .6s ease"></div>
+        </div>
+      </div>`;
+  });
+  typeBars.innerHTML = bHtml;
+}
+
+// ═══════════════════════════════════════════════════════════
+// COUNTERS
+// ═══════════════════════════════════════════════════════════
+function updateAllCounters() {
+  const total = data.length;
+  document.getElementById('nb-total').textContent = total;
+  ['pg','sc','pr','oe'].forEach(t=>{
+    const cnt = data.filter(r=>r.type===t).length;
+    document.getElementById('nb-'+t).textContent = cnt;
+  });
+  document.getElementById('sb-count').textContent = `${total} trámite${total!==1?'s':''} registrado${total!==1?'s':''}`;
+  renderDashboard();
+}
+
+// ═══════════════════════════════════════════════════════════
+// CONFIG
+// ═══════════════════════════════════════════════════════════
+function saveConfig() {
+  const cfg = {
+    inst:     document.getElementById('cfg-inst').value,
+    uni:      document.getElementById('cfg-uni').value,
+    director: document.getElementById('cfg-director').value,
+    mail:     document.getElementById('cfg-mail').value,
+  };
+  localStorage.setItem(CFG_KEY, JSON.stringify(cfg));
+  alert('Configuración guardada.');
+}
+
+function renderConfigStats() {
+  const el = document.getElementById('config-stats');
+  const today_str = new Date().toISOString().split('T')[0];
+  el.innerHTML = `
+    Total de trámites registrados: <strong>${data.length}</strong><br>
+    Peticiones Generales: <strong>${data.filter(r=>r.type==='pg').length}</strong> &nbsp;|&nbsp;
+    Salidas de Campo: <strong>${data.filter(r=>r.type==='sc').length}</strong> &nbsp;|&nbsp;
+    Petición de Recursos: <strong>${data.filter(r=>r.type==='pr').length}</strong> &nbsp;|&nbsp;
+    Org. de Evento: <strong>${data.filter(r=>r.type==='oe').length}</strong><br>
+    Pendientes: <strong>${data.filter(r=>r.estado==='Pendiente').length}</strong> &nbsp;|&nbsp;
+    Completados: <strong>${data.filter(r=>r.estado==='Completado').length}</strong><br>
+    Nuevos hoy: <strong>${data.filter(r=>r.fecha.startsWith(today_str)).length}</strong><br>
+    Folios asignados: PG:${folios.PG} · SC:${folios.SC} · PR:${folios.PR} · OE:${folios.OE}
+  `;
+  // load cfg
+  const cfg = loadCfg();
+  if(cfg.inst) document.getElementById('cfg-inst').value = cfg.inst;
+  if(cfg.uni)  document.getElementById('cfg-uni').value  = cfg.uni;
+  if(cfg.director) document.getElementById('cfg-director').value = cfg.director;
+  if(cfg.mail) document.getElementById('cfg-mail').value = cfg.mail;
+}
+
+// ═══════════════════════════════════════════════════════════
+// EXPORT
+// ═══════════════════════════════════════════════════════════
+function exportCSV() {
+  if(!data.length){ alert('No hay datos para exportar.'); return; }
+  const rows = [['Folio','Tipo','Apellidos','Nombres','Matrícula','Correo','Fecha','Estado']];
+  data.forEach(r=>rows.push([r.folio,r.label,r.apellidos,r.nombres,r.matricula,r.correo,r.fecha.split('T')[0],r.estado]));
+  const csv = rows.map(r=>r.map(c=>`"${String(c||'').replace(/"/g,'""')}"`).join(',')).join('\n');
+  const blob = new Blob(['\uFEFF'+csv],{type:'text/csv;charset=utf-8'});
+  const a = document.createElement('a');
+  a.href=URL.createObjectURL(blob);
+  a.download=`CITRO_tramites_${new Date().toISOString().split('T')[0]}.csv`;
+  a.click();
+}
+
+function exportJSON() {
+  const blob = new Blob([JSON.stringify({tramites:data,folios},null,2)],{type:'application/json'});
+  const a = document.createElement('a');
+  a.href=URL.createObjectURL(blob);
+  a.download=`CITRO_backup_${new Date().toISOString().split('T')[0]}.json`;
+  a.click();
+}
+
+function clearAll() {
+  if(!confirm('¿Borrar TODOS los trámites registrados? Esta acción no se puede deshacer.')) return;
+  data = [];
+  folios = {PG:0,SC:0,PR:0,OE:0};
+  saveData(data);
+  saveFolios(folios);
+  updateAllCounters();
+  renderDashboard();
+  alert('Datos borrados.');
+}
+
+// ═══════════════════════════════════════════════════════════
+// INIT
+// ═══════════════════════════════════════════════════════════
+function init() {
+  // Set today's date on all date fields
+  const today = new Date().toISOString().split('T')[0];
+  ['pg-fecha','sc-fecha-salida','sc-fecha-regreso','pr-fecha','oe-fecha'].forEach(id=>{
+    const el = document.getElementById(id);
+    if(el) el.value = today;
+  });
+
+  // Topbar date
+  document.getElementById('topbar-date').textContent =
+    new Date().toLocaleDateString('es-MX',{weekday:'short',day:'numeric',month:'short',year:'numeric'});
+
+  updateAllCounters();
+  renderDashboard();
+
+  // Remove .err on input
+  document.querySelectorAll('input,select,textarea').forEach(el=>{
+    el.addEventListener('input',()=>el.classList.remove('err'));
+    el.addEventListener('change',()=>el.classList.remove('err'));
+  });
+}
+init();
+</script>
+</body>
+</html>

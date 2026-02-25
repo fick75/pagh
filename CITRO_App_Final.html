@@ -700,11 +700,10 @@ tbody td{padding:9px 12px;font-size:.8rem;vertical-align:middle}
 
 <script>
 // ════════════════════════════════════════════════════════════
-//  CONFIGURACIÓN — editar si no se usa el panel de Config
+//  CONFIGURACIÓN - editar si no se usa el panel de Config
 // ════════════════════════════════════════════════════════════
-const DEFAULT_GAS_URL = 'https://script.google.com/macros/s/AKfycbwtMSt9gf8bHTELkrCPwPqm0TVuYO9aZoT0VoiIofH5hgOpuz3cEgfeTnAEnZ0RcDKXxw/exec
-'https://fick75.github.io/pagh/; // pegar URL del Web App aquí
-const DEFAULT_SECRET  = 'AKfycbwtMSt9gf8bHTELkrCPwPqm0TVuYO9aZoT0VoiIofH5hgOpuz3cEgfeTnAEnZ0RcDKXxw';
+const DEFAULT_GAS_URL = ''; // pegar URL del Web App aquí
+const DEFAULT_SECRET  = 'citro-uv-2025-secret';
 
 // ════════════════════════════════════════════════════════════
 //  ESTADO
@@ -821,9 +820,9 @@ function finishLogin(user) {
     document.getElementById('userAdminBadge').style.display = 'inline';
     document.querySelectorAll('.admin-only').forEach(el => el.classList.add('show'));
     document.getElementById('sb-admin-section').classList.add('show');
-    setSyncStatus('on', `Conectado como admin · ${user.email}`);
+    setSyncStatus('on', `Conectado como admin  -  ${user.email}`);
   } else {
-    setSyncStatus(isOnline ? 'on' : 'off', isOnline ? `Conectado · ${user.email}` : `Sin Drive · ${user.email}`);
+    setSyncStatus(isOnline ? 'on' : 'off', isOnline ? `Conectado  -  ${user.email}` : `Sin Drive  -  ${user.email}`);
   }
 
   updateAllCounters();
@@ -832,7 +831,7 @@ function finishLogin(user) {
 
 function loginOffline() {
   document.getElementById('loginOverlay').classList.add('hide');
-  setSyncStatus('off', 'Sin Drive — datos solo locales');
+  setSyncStatus('off', 'Sin Drive - datos solo locales');
   document.getElementById('sb-user-status').textContent = 'Sin sesión Google';
   updateAllCounters();
   renderDashboard();
@@ -857,7 +856,7 @@ function setSyncStatus(state, label) {
 }
 
 // ════════════════════════════════════════════════════════════
-//  DRIVE + SHEETS — llamadas al backend GAS
+//  DRIVE + SHEETS - llamadas al backend GAS
 // ════════════════════════════════════════════════════════════
 async function syncToDrive(record) {
   const gasUrl = cfg.gasUrl || DEFAULT_GAS_URL;
@@ -879,7 +878,7 @@ async function syncToDrive(record) {
     const j = await r.json();
     if(j.ok) {
       isOnline = true;
-      setSyncStatus('on', `Guardado en Drive · ${new Date().toLocaleTimeString('es-MX')}`);
+      setSyncStatus('on', `Guardado en Drive  -  ${new Date().toLocaleTimeString('es-MX')}`);
       return { ok: true, driveUrl: j.driveUrl };
     } else {
       setSyncStatus('error', 'Error en servidor');
@@ -1050,10 +1049,10 @@ async function submitForm(type) {
   const d = new Date().toISOString().split('T')[0].replace(/-/g,'');
   const fname = `${TYPE_LABELS[type].replace(/ /g,'')}_${record.matricula}_${record.apellidos.split(' ')[0]}_${d}`;
 
-  let msg = `✓ Folio ${folio} registrado · ${fname}`;
-  if(driveUrl) msg += ` · <a href="${driveUrl}" target="_blank" style="color:var(--green)">Ver en Drive ↗</a>`;
-  else if(gasUrl) msg += ' · ⚠️ Sin conexión a Drive (guardado localmente)';
-  else msg += ' · Guardado localmente (Drive no configurado)';
+  let msg = `✓ Folio ${folio} registrado  -  ${fname}`;
+  if(driveUrl) msg += `  -  <a href="${driveUrl}" target="_blank" style="color:var(--green)">Ver en Drive ↗</a>`;
+  else if(gasUrl) msg += '  -  ⚠️ Sin conexión a Drive (guardado localmente)';
+  else msg += '  -  Guardado localmente (Drive no configurado)';
 
   document.getElementById(type+'-alert-msg').innerHTML = msg;
   const alertEl = document.getElementById(type+'-alert');
@@ -1102,7 +1101,7 @@ function renderTable() {
   const estadoMap={'Pendiente':'badge-pending','En revisión':'badge-review','Completado':'badge-done','Cancelado':'badge-canceled'};
   rows.forEach((r,i)=>{
     const ds=new Date(r.fecha).toLocaleDateString('es-MX',{day:'2-digit',month:'2-digit',year:'numeric'});
-    const driveCell=r.driveUrl?`<a class="drive-link" href="${r.driveUrl}" target="_blank">📄 Drive</a>`:`<span style="color:var(--border);font-size:.72rem">—</span>`;
+    const driveCell=r.driveUrl?`<a class="drive-link" href="${r.driveUrl}" target="_blank">📄 Drive</a>`:`<span style="color:var(--border);font-size:.72rem">-</span>`;
     tbody.innerHTML+=`<tr>
       <td><span style="font-family:'IBM Plex Mono',monospace;font-size:.78rem;color:var(--teal);font-weight:600">${r.folio}</span></td>
       <td><span style="font-size:.72rem">${TYPE_ICONS[r.type]} ${r.label}</span></td>
@@ -1172,7 +1171,7 @@ function renderAdminTable() {
   document.getElementById('admin-table').style.display='table';
   const estadoMap={'Pendiente':'badge-pending','En revisión':'badge-review','Completado':'badge-done','Cancelado':'badge-canceled'};
   rows.forEach(r=>{
-    const driveCell=r['URL Drive']?`<a class="drive-link" href="${r['URL Drive']}" target="_blank">📄 Abrir</a>`:'—';
+    const driveCell=r['URL Drive']?`<a class="drive-link" href="${r['URL Drive']}" target="_blank">📄 Abrir</a>`:'-';
     tbody.innerHTML+=`<tr>
       <td><span style="font-family:'IBM Plex Mono',monospace;font-size:.78rem;color:var(--teal);font-weight:600">${r['Folio']||''}</span></td>
       <td style="font-size:.78rem">${r['Tipo']||''}</td>
@@ -1180,7 +1179,7 @@ function renderAdminTable() {
       <td style="font-family:'IBM Plex Mono',monospace;font-size:.72rem">${r['Matrícula']||''}</td>
       <td style="font-size:.75rem;color:var(--muted)">${r['Correo']||''}</td>
       <td style="font-size:.72rem;color:var(--muted)">${r['Fecha Registro']||''}</td>
-      <td><span class="badge ${estadoMap[r['Estado']]||'badge-new'}">${r['Estado']||'—'}</span></td>
+      <td><span class="badge ${estadoMap[r['Estado']]||'badge-new'}">${r['Estado']||'-'}</span></td>
       <td>${driveCell}</td>
       <td><select style="font-size:.72rem;padding:3px 6px;border-radius:4px;border:1px solid var(--border)" onchange="adminChangeStatus('${r['Folio']}',this.value)">
         <option ${r['Estado']==='Pendiente'?'selected':''}>Pendiente</option>
@@ -1294,7 +1293,7 @@ function renderDashboard() {
     const time=new Date(r.fecha).toLocaleTimeString('es-MX',{hour:'2-digit',minute:'2-digit'});
     const cls=r.estado==='Completado'?'done':r.driveUrl?'cloud':'new';
     const driveTag=r.driveUrl?`<a href="${r.driveUrl}" target="_blank" style="font-size:.68rem;color:var(--teal);margin-left:6px">📄 Drive</a>`:'';
-    return `<div class="tl-item ${cls}"><div class="tl-time">${time}</div><div class="tl-text"><strong>${TYPE_ICONS[r.type]} ${r.label}</strong> — ${r.apellidos}, ${r.nombres} · <span style="font-family:'IBM Plex Mono',monospace;color:var(--teal);font-size:.72rem">${r.folio}</span>${driveTag}</div></div>`;
+    return `<div class="tl-item ${cls}"><div class="tl-time">${time}</div><div class="tl-text"><strong>${TYPE_ICONS[r.type]} ${r.label}</strong> - ${r.apellidos}, ${r.nombres}  -  <span style="font-family:'IBM Plex Mono',monospace;color:var(--teal);font-size:.72rem">${r.folio}</span>${driveTag}</div></div>`;
   }).join('')+'</div>';
   const types=['pg','sc','pr','oe'];
   const typeBars=document.getElementById('type-bars');
@@ -1307,7 +1306,7 @@ function renderDashboard() {
   // Sync card
   const syncEl=document.getElementById('sync-detail');
   const gasUrl=cfg.gasUrl||DEFAULT_GAS_URL;
-  if(gasUrl) syncEl.innerHTML=`<span style="color:var(--green)">● Drive activo</span> · Los nuevos trámites se guardan automáticamente en Drive y en la hoja de seguimiento CITRO.`;
+  if(gasUrl) syncEl.innerHTML=`<span style="color:var(--green)">● Drive activo</span>  -  Los nuevos trámites se guardan automáticamente en Drive y en la hoja de seguimiento CITRO.`;
   else syncEl.innerHTML='<span style="color:var(--muted)">☁️ Configure el URL del servidor en <strong>Configuración</strong> para activar Drive.</span>';
 }
 
@@ -1350,7 +1349,7 @@ function saveInstitConfig() {
 
 function renderConfigStats() {
   const today_str=new Date().toISOString().split('T')[0];
-  document.getElementById('config-stats').innerHTML=`Total: <strong>${data.length}</strong> &nbsp;|&nbsp; PG: <strong>${data.filter(r=>r.type==='pg').length}</strong> &nbsp;|&nbsp; SC: <strong>${data.filter(r=>r.type==='sc').length}</strong> &nbsp;|&nbsp; PR: <strong>${data.filter(r=>r.type==='pr').length}</strong> &nbsp;|&nbsp; OE: <strong>${data.filter(r=>r.type==='oe').length}</strong><br>Pendientes: <strong>${data.filter(r=>r.estado==='Pendiente').length}</strong> &nbsp;|&nbsp; Completados: <strong>${data.filter(r=>r.estado==='Completado').length}</strong><br>Hoy: <strong>${data.filter(r=>r.fecha.startsWith(today_str)).length}</strong> nuevos &nbsp;|&nbsp; Folios: PG:${folios.PG} · SC:${folios.SC} · PR:${folios.PR} · OE:${folios.OE}<br>Drive: <strong>${data.filter(r=>r.driveUrl).length}</strong> sincronizados`;
+  document.getElementById('config-stats').innerHTML=`Total: <strong>${data.length}</strong> &nbsp;|&nbsp; PG: <strong>${data.filter(r=>r.type==='pg').length}</strong> &nbsp;|&nbsp; SC: <strong>${data.filter(r=>r.type==='sc').length}</strong> &nbsp;|&nbsp; PR: <strong>${data.filter(r=>r.type==='pr').length}</strong> &nbsp;|&nbsp; OE: <strong>${data.filter(r=>r.type==='oe').length}</strong><br>Pendientes: <strong>${data.filter(r=>r.estado==='Pendiente').length}</strong> &nbsp;|&nbsp; Completados: <strong>${data.filter(r=>r.estado==='Completado').length}</strong><br>Hoy: <strong>${data.filter(r=>r.fecha.startsWith(today_str)).length}</strong> nuevos &nbsp;|&nbsp; Folios: PG:${folios.PG}  -  SC:${folios.SC}  -  PR:${folios.PR}  -  OE:${folios.OE}<br>Drive: <strong>${data.filter(r=>r.driveUrl).length}</strong> sincronizados`;
   if(cfg.gasUrl) document.getElementById('cfg-gas-url').value=cfg.gasUrl;
   if(cfg.secret) document.getElementById('cfg-secret').value=cfg.secret;
   if(cfg.inst)   document.getElementById('cfg-inst').value=cfg.inst;
@@ -1404,17 +1403,17 @@ function printFormFromRecord(r) {
   const TYPE_COLORS_HEX={pg:'#5B2F8A',sc:'#1A7A4A',pr:'#B85C0A',oe:'#1B5FA8'};
   const color=TYPE_COLORS_HEX[r.type]||'#0A7A6E';
 
-  const header=`<div style="text-align:center;border-bottom:2px solid #0D1F3C;padding-bottom:12px;margin-bottom:16px"><div style="font-size:9pt;text-transform:uppercase;letter-spacing:.1em;color:#5A6880">Centro de Investigaciones Tropicales</div><div style="font-size:16pt;font-weight:bold;color:#0D1F3C">UNIVERSIDAD VERACRUZANA</div><div style="font-size:9pt;color:#5A6880">${cfg.inst||''} · Xalapa, Veracruz · ${today}</div></div>`;
-  const firma=`<div style="margin-top:48px;display:grid;grid-template-columns:1fr 1fr;gap:32px"><div style="text-align:center"><div style="border-top:1px solid #333;padding-top:6px;font-size:9pt">Firma del solicitante<br><span style="color:#5A6880">${r.apellidos}, ${r.nombres} · ${r.matricula}</span></div></div><div style="text-align:center"><div style="border-top:1px solid #333;padding-top:6px;font-size:9pt">Vo.Bo. Dirección CITRO${cfg.director?'<br><span style="color:#5A6880">'+cfg.director+'</span>':''}</div></div></div><div style="margin-top:16px;text-align:center;font-size:8pt;color:#9AA5B4;border-top:1px solid #eee;padding-top:8px">CITRO-Formularios v3.0 · Folio <strong style="color:${color}">${folio}</strong></div>`;
+  const header=`<div style="text-align:center;border-bottom:2px solid #0D1F3C;padding-bottom:12px;margin-bottom:16px"><div style="font-size:9pt;text-transform:uppercase;letter-spacing:.1em;color:#5A6880">Centro de Investigaciones Tropicales</div><div style="font-size:16pt;font-weight:bold;color:#0D1F3C">UNIVERSIDAD VERACRUZANA</div><div style="font-size:9pt;color:#5A6880">${cfg.inst||''}  -  Xalapa, Veracruz  -  ${today}</div></div>`;
+  const firma=`<div style="margin-top:48px;display:grid;grid-template-columns:1fr 1fr;gap:32px"><div style="text-align:center"><div style="border-top:1px solid #333;padding-top:6px;font-size:9pt">Firma del solicitante<br><span style="color:#5A6880">${r.apellidos}, ${r.nombres}  -  ${r.matricula}</span></div></div><div style="text-align:center"><div style="border-top:1px solid #333;padding-top:6px;font-size:9pt">Vo.Bo. Dirección CITRO${cfg.director?'<br><span style="color:#5A6880">'+cfg.director+'</span>':''}</div></div></div><div style="margin-top:16px;text-align:center;font-size:8pt;color:#9AA5B4;border-top:1px solid #eee;padding-top:8px">CITRO-Formularios v3.0  -  Folio <strong style="color:${color}">${folio}</strong></div>`;
 
   let body='';
   if(r.type==='pg') body=`<p><strong>Tipo:</strong> ${r.tipo||''}</p><p><strong>Urgencia:</strong> ${r.urgencia||''}</p><p><strong>Descripción:</strong></p><p>${r.descripcion||''}</p>${r.obs?`<p><strong>Observaciones:</strong> ${r.obs}</p>`:''}${r.adjuntos?`<p><strong>Adjuntos:</strong> ${r.adjuntos}</p>`:''}`;
   else if(r.type==='sc') body=`<p><strong>Lugar(es) [Lugares]:</strong></p><p>${r.lugares||''}</p><p><strong>Actividades [Actividades]:</strong></p><p>${r.actividades||''}</p><p><strong>Fecha [Fecha]:</strong> ${r.fecha_salida||''} al ${r.fecha_regreso||''}</p>${r.participantes?`<p><strong>Participantes:</strong> ${r.participantes}</p>`:''}${r.transporte?`<p><strong>Transporte:</strong> ${r.transporte}</p>`:''}`;
   else if(r.type==='pr') body=`<p><strong>Actividad [Actividad]:</strong> ${r.actividad||''}</p><p><strong>Justificación [Justificación]:</strong></p><p>${r.justificacion||''}</p><p><strong>Tipo de recurso:</strong> ${r.tipo_recurso||''}</p>${r.monto?`<p><strong>Monto:</strong> $${parseFloat(r.monto||0).toLocaleString('es-MX',{minimumFractionDigits:2})} MXN</p>`:''}${r.proyecto?`<p><strong>Proyecto:</strong> ${r.proyecto}</p>`:''}`;
-  else if(r.type==='oe') body=`<p><strong>Evento [Evento]:</strong> ${r.nombre_evento||''}</p><p><strong>Fecha y sede [Datos]:</strong> ${r.fecha_evento||''} · ${r.sede||''}</p><p><strong>Presupuesto [Monto]:</strong> $${parseFloat(r.presupuesto||0).toLocaleString('es-MX',{minimumFractionDigits:2})} MXN</p><p><strong>Asistentes [Número]:</strong> ${r.asistentes||''}</p><p><strong>Proyecto [Proyecto]:</strong> ${r.proyecto||''}</p><p><strong>LGAC/PLADEA [Descripción]:</strong></p><p>${r.lgac||''}</p>`;
+  else if(r.type==='oe') body=`<p><strong>Evento [Evento]:</strong> ${r.nombre_evento||''}</p><p><strong>Fecha y sede [Datos]:</strong> ${r.fecha_evento||''}  -  ${r.sede||''}</p><p><strong>Presupuesto [Monto]:</strong> $${parseFloat(r.presupuesto||0).toLocaleString('es-MX',{minimumFractionDigits:2})} MXN</p><p><strong>Asistentes [Número]:</strong> ${r.asistentes||''}</p><p><strong>Proyecto [Proyecto]:</strong> ${r.proyecto||''}</p><p><strong>LGAC/PLADEA [Descripción]:</strong></p><p>${r.lgac||''}</p>`;
 
   const w=window.open('','_blank','width=794,height=1100');
-  w.document.write(`<!doctype html><html><head><meta charset="utf-8"><title>CITRO — ${folio}</title><style>body{font-family:'Times New Roman',serif;font-size:12pt;line-height:1.65;margin:2cm;color:#111}p{margin-bottom:8px}@media print{body{margin:1.5cm}}</style></head><body>
+  w.document.write(`<!doctype html><html><head><meta charset="utf-8"><title>CITRO - ${folio}</title><style>body{font-family:'Times New Roman',serif;font-size:12pt;line-height:1.65;margin:2cm;color:#111}p{margin-bottom:8px}@media print{body{margin:1.5cm}}</style></head><body>
     ${header}
     <div style="text-align:right;margin-bottom:16px"><span style="font-family:monospace;background:#f2f5fa;padding:4px 10px;border-radius:4px;font-size:10pt;color:${color}">Folio: ${folio}</span></div>
     <p><strong>Asunto:</strong> ${r.label}</p>
